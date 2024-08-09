@@ -85,6 +85,16 @@ func (p *pg) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, erro
 	return p.dbc.BeginTx(ctx, txOptions)
 }
 
+// SendBatchContext sends a batch using the transaction if present in the context, otherwise uses the default connection.
+func (p *pg) SendBatchContext(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.SendBatch(ctx, b)
+	}
+
+	return p.dbc.SendBatch(ctx, b)
+}
+
 // Ping checks the database connection.
 func (p *pg) Ping(ctx context.Context) error {
 	return p.dbc.Ping(ctx)
