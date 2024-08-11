@@ -79,6 +79,22 @@ func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error)
 	return values, nil
 }
 
+func (c *client) Del(ctx context.Context, key string) error {
+	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+		_, err := conn.Do("DEL", key)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	var value interface{}
 	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
