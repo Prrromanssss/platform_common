@@ -106,6 +106,24 @@ func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	return value, nil
 }
 
+func (c *client) Exists(ctx context.Context, key string) (bool, error) {
+	var exists bool
+	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+		var errEx error
+		exists, errEx = redis.Bool(conn.Do("EXISTS", key))
+		if errEx != nil {
+			return errEx
+		}
+
+		return nil
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 func (c *client) Expire(ctx context.Context, key string, expiration time.Duration) error {
 	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
 		_, err := conn.Do("EXPIRE", key, int(expiration.Seconds()))
