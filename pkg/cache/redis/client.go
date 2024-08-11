@@ -8,24 +8,17 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-type RedisConfig interface {
-	Address() string
-	ConnectionTimeout() time.Duration
-	MaxIdle() int
-	IdleTimeout() time.Duration
-}
-
 type handler func(ctx context.Context, conn redis.Conn) error
 
 type client struct {
-	pool   *redis.Pool
-	config RedisConfig
+	pool              *redis.Pool
+	connectionTimeout time.Duration
 }
 
-func NewClient(pool *redis.Pool, config RedisConfig) *client {
+func NewClient(pool *redis.Pool, connectionTimeout time.Duration) *client {
 	return &client{
-		pool:   pool,
-		config: config,
+		pool:              pool,
+		connectionTimeout: connectionTimeout,
 	}
 }
 
@@ -166,7 +159,7 @@ func (c *client) execute(ctx context.Context, handler handler) error {
 }
 
 func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
-	getConnTimeoutCtx, cancel := context.WithTimeout(ctx, c.config.ConnectionTimeout())
+	getConnTimeoutCtx, cancel := context.WithTimeout(ctx, c.connectionTimeout)
 	defer cancel()
 
 	conn, err := c.pool.GetContext(getConnTimeoutCtx)
