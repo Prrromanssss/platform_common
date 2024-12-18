@@ -67,10 +67,10 @@ func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Han
 	// If the function fails, return an error, and the deferred function will roll back
 	// otherwise, the transaction is committed.
 	if err = fn(ctx); err != nil {
-		err = errors.Wrap(err, "failed executing code inside transaction")
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func (m *manager) ReadCommitted(ctx context.Context, f db.Handler) error {
